@@ -8,6 +8,7 @@ namespace ContosoInventory.Server.Data;
 public class InventoryContext : IdentityDbContext<IdentityUser>
 {
     public DbSet<Category> Categories { get; set; } = null!;
+    public DbSet<Product> Products { get; set; } = null!;
 
     public InventoryContext(DbContextOptions<InventoryContext> options)
         : base(options) { }
@@ -22,6 +23,22 @@ public class InventoryContext : IdentityDbContext<IdentityUser>
             entity.Property(c => c.Name).IsRequired().HasMaxLength(100);
             entity.Property(c => c.Description).IsRequired().HasMaxLength(500);
             entity.HasIndex(c => c.Name).IsUnique();
+        });
+
+        builder.Entity<Product>(entity =>
+        {
+            entity.HasKey(p => p.Id);
+            entity.Property(p => p.Name).IsRequired().HasMaxLength(150);
+            entity.Property(p => p.Sku).IsRequired().HasMaxLength(50).UseCollation("NOCASE");
+            entity.Property(p => p.Description).IsRequired().HasMaxLength(1000);
+            entity.Property(p => p.Price).IsRequired();
+            entity.Property(p => p.StockQuantity).IsRequired();
+            entity.HasIndex(p => p.Sku).IsUnique();
+            entity.HasIndex(p => p.CategoryId);
+            entity.HasOne(p => p.Category)
+                .WithMany()
+                .HasForeignKey(p => p.CategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

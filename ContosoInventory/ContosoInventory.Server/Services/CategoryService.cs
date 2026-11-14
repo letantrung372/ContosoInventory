@@ -152,6 +152,11 @@ public class CategoryService : ICategoryService
                 return false;
             }
 
+            if (await _context.Products.AnyAsync(product => product.CategoryId == id))
+            {
+                throw new InvalidOperationException("The category cannot be deleted while products reference it.");
+            }
+
             _context.Categories.Remove(category);
             await _context.SaveChangesAsync();
 
